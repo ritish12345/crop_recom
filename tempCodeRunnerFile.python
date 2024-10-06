@@ -1,0 +1,55 @@
+from collections import defaultdict
+
+def count_subtree_factors(n, edges):
+    # Build the tree using adjacency list representation
+    tree = defaultdict(list)
+    for u, v in edges:
+        tree[u].append(v)
+        tree[v].append(u)
+
+    # Initialize subtree size array
+    subtree_size = [0] * (n + 1)
+
+    # DFS to calculate subtree sizes
+    def dfs(node, parent):
+        subtree_size[node] = 1
+        for neighbor in tree[node]:
+            if neighbor != parent:
+                dfs(neighbor, node)
+                subtree_size[node] += subtree_size[neighbor]
+
+    # Start DFS from root node (node 1)
+    dfs(1, -1)
+
+    # Initialize usefulness array
+    usefulness = [0] * (n + 1)
+
+    # Calculate usefulness of each node
+    def calculate_usefulness(node, parent):
+        for neighbor in tree[node]:
+            if neighbor != parent:
+                calculate_usefulness(neighbor, node)
+        for neighbor in tree[node]:
+            if neighbor != parent:
+                if neighbor % node == 0:
+                    usefulness[node] += subtree_size[neighbor]
+        if node % node == 0:
+            usefulness[node] += 1
+
+    # Start usefulness calculation from root node (node 1)
+    calculate_usefulness(1, -1)
+
+    # Calculate total usefulness
+    total_usefulness = sum(usefulness)
+
+    return total_usefulness
+
+# Read input and invoke the function
+n = int(input().strip())
+m = int(input().strip())
+cols = int(input().strip())
+
+edges = [tuple(map(int, input().split())) for _ in range(m)]
+
+# Output the result
+print(count_subtree_factors(n, edges))
